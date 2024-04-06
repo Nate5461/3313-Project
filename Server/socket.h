@@ -50,6 +50,8 @@ public:
     int Write(ByteArray const & buffer);
     int Read(ByteArray & buffer);
     void Close(void);
+
+    
 };
 
 #endif // SOCKET_H

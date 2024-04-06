@@ -7,6 +7,17 @@
 #include <list>
 #include <pthread.h>
 #include <vector>
+#include "Board.h"
+#include <algorithm>
+
+struct Game {
+    int id;
+    Board board;
+    std::vector<Socket> players;
+};
+
+std::vector <Game> games;
+
 
 class CommThread : public Thread
 {
@@ -38,11 +49,57 @@ public:
                 break;
             }
             else
-            
+
             {
                 std::string theString = bytes.ToString();
                 std::cout << "Received: " << theString << std::endl;
-                bytes.v[0]='R';
+
+                // Handle game-related commands
+                if (theString == "start") {
+                    Game newGame;
+                    newGame.players.push_back(theSocket);
+                    games.push_back(newGame);
+
+                //Avaialable games
+                } else if (theString == "join") {
+                
+                    std::vector<int> availableGames;
+                    for (const Game& game : games) {
+                        if (game.players.size() < 2) {
+                            availableGames.push_back(game.id);
+                            break;
+                        }
+                    }
+
+                    std::string availableGamesString = "Available games: " + std::to_string(availableGames.size());
+                
+                    for (int id : availableGames) {
+                        availableGamesString += " " + std::to_string(id);
+                    }
+                    ByteArray bytes(availableGamesString);
+                    theSocket.Write(bytes);
+                
+                } else if (theString.substr(0,4) == "join"){
+                    int gameId = std::stoi(theString.substr(5));
+
+                    for (Game& game : games) {
+                        if (game.id == gameId && game.players.size() < 2) {
+                            game.players.push_back(theSocket);
+                            break;
+                        }
+                    }
+                }
+                
+                else if (theString == "end") {
+                    // Find the game this socket is part of and remove it
+                    auto it = std::find_if(games.begin(), games.end(), [&](const Game& game) {
+                    return std::find(game.players.begin(), game.players.end(), theSocket) != game.players.end();
+                    });
+                    if (it != games.end()) {
+                        games.erase(it);
+                    }
+                }
+
                 theSocket.Write(bytes);
             }
         }
@@ -81,7 +138,7 @@ public:
 int main(void)
 {
     std::cout << "I am a socket server" << std::endl;
-    SocketServer theServer(2000);
+    SocketServer theServer(3000);
     KillThread killer(theServer);
     std::vector<CommThread *> threads;
 
