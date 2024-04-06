@@ -51,7 +51,11 @@ public:
     int Read(ByteArray & buffer);
     void Close(void);
 
-    
+    bool operator==(const Socket& other) const {
+        // Compare the relevant fields of the two sockets.
+        // This is just an example; you'll need to replace it with your own comparison logic.
+        return this->socketFD == other.socketFD;
+    }
 };
 
 #endif // SOCKET_H

@@ -6,18 +6,6 @@
 #include <cmath>
 #include <climits>
 
-Board::Board() {
-    numOfRows = CONNECT_4_NUM_OF_ROWS;
-    numOfColumns = CONNECT_4_NUM_OF_COLUMNS;
-    checkersInARow = CONNECT_4_CHECKERS_IN_A_ROW;
-    lastMove = Move();
-    lastPlayer = P2;
-    winner = EMPTY;
-    overflow = false;
-    gameOver = false;
-    turn = 1;
-    gameBoard = std::vector<std::vector<int>>(numOfRows, std::vector<int>(numOfColumns, EMPTY));
-}
 
 Board::Board(int numOfRows, int numOfColumns, int checkersInARow) {
     this->numOfRows = numOfRows;
@@ -78,23 +66,6 @@ int Board::getEmptyRowPosition(int col) {
 }
 
 
-bool Board::checkForDraw() {
-    for (int row = 0; row < numOfRows; row++) {
-        for (int col = 0; col < numOfColumns; col++) {
-            if (gameBoard[row][col] == EMPTY) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-int Board::countNInARow(int N, int player) {
-    int times = 0;
-
-    // ... Add the rest of the countNInARow method here
-}
 
 bool Board::checkForGameOver() {
     if (checkWinState()) {

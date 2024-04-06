@@ -7,7 +7,7 @@ int main(void)
 {
     try
     {
-        Socket theSocket("127.0.0.1", 2000);
+        Socket theSocket("127.0.0.1", 3000);
         theSocket.Open();
         std::string entry = "";
         while (entry != "done")
