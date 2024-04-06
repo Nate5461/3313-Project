@@ -15,6 +15,8 @@ struct Game {
     Board board;
     std::vector<Socket> players;
     Semaphore semaphore;
+
+    Game() : id(0), board(), semaphore(0) {}
 };
 
 std::vector <Game> games;
@@ -139,7 +141,6 @@ public:
                     for (Game& game : games) {
                         if (game.id == gameId && game.players.size() < 2) {
                             game.players.push_back(theSocket);
-                            cv.notify_all();
                             break;
                         }
                     }
