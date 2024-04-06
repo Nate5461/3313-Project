@@ -1,0 +1,32 @@
+#pragma once
+#include "Constants.h"
+#include "Board.h"
+#include <vector>
+#include "Move.h"
+
+
+class Board {
+private:
+    std::vector<std::vector<int>> gameBoard;
+    int numOfRows;
+    int numOfColumns;
+    int checkersInARow;
+    Move lastMove;
+    int lastPlayer;
+    int winner;
+    bool overflow;
+    bool gameOver;
+    int turn;
+
+public:
+    Board();
+    Board(int numOfRows, int numOfColumns, int checkersInARow);
+    Board(const Board& board);
+    void makeMove(int col, int player);
+    bool canMove(int row, int col);
+    bool checkFullColumn(int col);
+    int getEmptyRowPosition(int col);
+    std::vector<Board> getChildren(int player);
+    int evaluate();
+    bool checkWinState();
+};

@@ -10,6 +10,7 @@
 
 class CommThread : public Thread
 {
+
 private:
     Socket theSocket;
 public:
@@ -25,6 +26,7 @@ public:
         for(;;)
         {
             int read = theSocket.Read(bytes);
+
             if (read == -1)
             {
                 std::cout << "Error in socket detected" << std::endl;
@@ -36,6 +38,7 @@ public:
                 break;
             }
             else
+            
             {
                 std::string theString = bytes.ToString();
                 std::cout << "Received: " << theString << std::endl;
@@ -48,6 +51,7 @@ public:
 };
 
 class KillThread  : public Thread
+
 {
 private:
     SocketServer & theServer;
@@ -71,6 +75,7 @@ public:
             }
         }
     }
+
 };
 
 int main(void)
@@ -104,6 +109,7 @@ int main(void)
             break;
         }
     }
+
     std::cout << "End of main" << std::endl;
     for (int i=0;i<threads.size();i++)
         delete threads[i];
