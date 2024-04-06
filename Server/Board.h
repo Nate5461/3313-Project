@@ -28,5 +28,8 @@ public:
     int getEmptyRowPosition(int col);
     std::vector<Board> getChildren(int player);
     int evaluate();
+    bool checkForDraw();
     bool checkWinState();
+    int countNInARow(int n, int player);
+    bool checkForGameOver();
 };
