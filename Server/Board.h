@@ -22,6 +22,8 @@ public:
     Board() = default;
     Board(int numOfRows, int numOfColumns, int checkersInARow);
     Board(const Board& board);
+    int getLastPlayer() const;
+    int getNumOfColumns() const;
     void makeMove(int col, int player);
     bool canMove(int row, int col);
     bool checkFullColumn(int col);

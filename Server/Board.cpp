@@ -33,6 +33,16 @@ Board::Board(const Board& board) {
     gameBoard = board.gameBoard;
 }
 
+int Board::getLastPlayer() const {
+    return lastPlayer;
+}
+
+int Board::getNumOfColumns() const {
+    return numOfColumns;
+}
+
+
+
 void Board::makeMove(int col, int player) {
     try {
         int row = getEmptyRowPosition(col);

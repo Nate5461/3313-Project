@@ -14,9 +14,58 @@ struct Game {
     int id;
     Board board;
     std::vector<Socket> players;
+    Semaphore semaphore;
 };
 
 std::vector <Game> games;
+
+class GameThread : public Thread
+{
+ private:
+    Game& game;
+public:
+    GameThread(Game& g) : Thread(true), game(g) {}
+
+    int ThreadMain(void) {
+
+        game.semaphore.Wait();
+
+        while (!game.board.checkForGameOver()) {
+            int currentPlayer = game.board.getLastPlayer() == P2 ? P1 : P2;
+            switch (currentPlayer) {
+                case P1: {
+                    std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
+                    ByteArray bytes(message);
+                    game.players[0].Write(bytes);
+
+                    ByteArray response;
+                    game.players[0].Read(response);
+
+
+                    int column = std::stoi(response.ToString());
+
+                    game.board.makeMove(column - 1, P1);
+                    break;
+                }
+                case P2: {
+                    std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
+                    ByteArray bytes(message);
+                    game.players[1].Write(bytes);
+
+                    ByteArray response;
+                    game.players[1].Read(response);
+                    int column = std::stoi(response.ToString());
+
+                    game.board.makeMove(column - 1, P2);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        return 0;
+    }
+};
 
 
 class CommThread : public Thread
@@ -32,6 +81,8 @@ public:
     }
     int ThreadMain(void)
     {
+
+
         ByteArray bytes;
         std::cout << "Created a socket thread!" << std::endl;
         for(;;)
@@ -59,6 +110,9 @@ public:
                     Game newGame;
                     newGame.players.push_back(theSocket);
                     games.push_back(newGame);
+                    GameThread gameThread(newGame);
+                    gameThread.Start();
+                    newGame.semaphore.Signal();
 
                 //Avaialable games
                 } else if (theString == "join") {
@@ -74,7 +128,7 @@ public:
                     std::string availableGamesString = "Available games: " + std::to_string(availableGames.size());
                 
                     for (int id : availableGames) {
-                        availableGamesString += " " + std::to_string(id);
+                        availableGamesString += " ID: " + std::to_string(id);
                     }
                     ByteArray bytes(availableGamesString);
                     theSocket.Write(bytes);
@@ -85,9 +139,12 @@ public:
                     for (Game& game : games) {
                         if (game.id == gameId && game.players.size() < 2) {
                             game.players.push_back(theSocket);
+                            cv.notify_all();
                             break;
                         }
                     }
+                    
+                    theSocket.Write(bytes);
                 }
                 
                 else if (theString == "end") {
@@ -137,9 +194,12 @@ public:
 
 int main(void)
 {
+
+    try{
     std::cout << "I am a socket server" << std::endl;
     SocketServer theServer(3000);
     KillThread killer(theServer);
+    std::cout << "Starting the server" << std::endl;
     std::vector<CommThread *> threads;
 
     for(;;)
@@ -170,4 +230,10 @@ int main(void)
     std::cout << "End of main" << std::endl;
     for (int i=0;i<threads.size();i++)
         delete threads[i];
+
+    } catch (const std::string& s) {
+        std::cout << "caught string exception: " << s << std::endl;
+    } catch (...) {
+        std::cout << "Caught unexpected exception" << std::endl;
+    }
 }
