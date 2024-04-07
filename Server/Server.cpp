@@ -41,10 +41,27 @@ public:
                     game.players[0].Write(bytes);
 
                     ByteArray response;
+
                     game.players[0].Read(response);
 
+                    if (response.ToString().empty()) {
+                        std::cout << "Player disconnected" << std::endl;
+                    }
 
-                    int column = std::stoi(response.ToString());
+                    std::string msg = response.ToString();
+
+                    
+                    int column;
+                    try{
+                        column = std::stoi(msg);
+                    } catch (std::invalid_argument& e) {
+                        std::cout << "Invalid input" << std::endl;
+                        continue;
+                    
+                    } catch (std::out_of_range& e) {
+                        std::cout << "Invalid input" << std::endl;
+                        continue;
+                    }
 
                     game.board.makeMove(column - 1, P1);
                     break;
@@ -109,12 +126,12 @@ public:
 
                 // Handle game-related commands
                 if (theString == "start") {
-                    Game newGame;
-                    newGame.players.push_back(theSocket);
-                    games.push_back(newGame);
-                    GameThread gameThread(newGame);
+                    Game* newGame = new Game();
+                    newGame->players.push_back(theSocket);
+                    games.push_back(*newGame);
+                    GameThread gameThread(*newGame);
                     gameThread.Start();
-                    newGame.semaphore.Signal();
+                    newGame->semaphore.Signal();
 
                 //Avaialable games
                 } else if (theString == "join") {
