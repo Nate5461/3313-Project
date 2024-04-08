@@ -19,7 +19,7 @@ private:
     int turn;
 
 public:
-    Board() = default;
+    Board();
     Board(int numOfRows, int numOfColumns, int checkersInARow);
     Board(const Board& board);
     int getLastPlayer() const;

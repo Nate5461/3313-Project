@@ -20,6 +20,20 @@ Board::Board(int numOfRows, int numOfColumns, int checkersInARow) {
     gameBoard = std::vector<std::vector<int>>(numOfRows, std::vector<int>(numOfColumns, EMPTY));
 }
 
+Board::Board(){
+    this->numOfRows = CONNECT_4_NUM_OF_ROWS;
+    this->numOfColumns = CONNECT_4_NUM_OF_COLUMNS;
+    this->checkersInARow = CONNECT_4_CHECKERS_IN_A_ROW;
+    lastMove = Move();
+    lastPlayer = P2;
+    winner = EMPTY;
+    overflow = false;
+    gameOver = false;
+    turn = 1;
+    gameBoard = std::vector<std::vector<int>>(numOfRows, std::vector<int>(numOfColumns, EMPTY));
+
+}
+
 Board::Board(const Board& board) {
     numOfRows = board.numOfRows;
     numOfColumns = board.numOfColumns;

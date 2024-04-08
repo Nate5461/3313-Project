@@ -38,15 +38,9 @@ public:
         std::cout << "Game thread started, semaphore bullshit" << std::endl;
         game.semaphore.Wait();
 
-        std::cout << "Waiting for players" << std::endl;
-        // Wait for a second player to join
-        while (game.players.size() < 2)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(1)); // Sleep for 1 second
-        }
-
-        std::cout << "Player 2 has been added, starting..." << std::endl;
-        while (!game.board.checkForGameOver())
+        std::cout << "game over" << game.board.checkForGameOver() << std::endl;
+        std::cout << "players size" << game.players.size() << std::endl;
+        while (!game.board.checkForGameOver() && game.players.size() == 2)
         {
 
             std::cout << "Game not over" << std::endl;
@@ -55,6 +49,7 @@ public:
             {
             case P1:
             {
+                std::cout << "Player 1's turn" << std::endl;
                 std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 game.players[0].Write(bytes);
@@ -92,6 +87,7 @@ public:
 
             case P2:
             {
+                std::cout << "Player 2's turn" << std::endl;
                 std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 game.players[1].Write(bytes);
@@ -165,6 +161,8 @@ public:
                     std::cout << "Semaphore signalled" << std::endl;
 
                     games.push_back(*newGame);
+
+                    this->Stop();
                     // Avaialable games
                 }
                 else if (theString == "join")
@@ -207,6 +205,7 @@ public:
                                 game.semaphore.Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
+                                this->Stop();
                                 break;
                             }
                         }
@@ -219,8 +218,6 @@ public:
                     {
                         std::cout << "Invalid command: game ID is out of range" << std::endl;
                     }
-
-                    theSocket.Write(bytes);
                 }
 
                 else if (theString == "end")
