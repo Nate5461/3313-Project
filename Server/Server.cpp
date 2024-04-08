@@ -22,7 +22,7 @@ struct Game
     Game(std::string const &name) : id(0), board(), semaphore(name, 0, true) {}
 };
 
-std::vector<Game> games;
+std::vector<Game *> games;
 
 class GameThread : public Thread
 {
@@ -36,6 +36,7 @@ public:
     {
 
         std::cout << "Game thread started, semaphore bullshit" << std::endl;
+        std::cout << "players size: " << game.players.size() << std::endl;
         game.semaphore.Wait();
 
         std::cout << "game over flag: " << game.board.checkForGameOver() << std::endl;
@@ -156,11 +157,9 @@ public:
                     newGame->players.push_back(theSocket);
                     std::cout << "Player 1 added" << std::endl;
                     gameThreads.emplace_back(new GameThread(*newGame));
-                    //gameThreads.back()->Start();
-                    //newGame->semaphore.Signal();
-                    //std::cout << "Semaphore signalled" << std::endl;
+                    
 
-                    games.push_back(*newGame);
+                    games.push_back(newGame);
 
                     // Avaialable games
                 }
@@ -168,11 +167,11 @@ public:
                 {
 
                     std::vector<int> availableGames;
-                    for (const Game &game : games)
+                    for (Game* game : games)
                     {
-                        if (game.players.size() < 2)
+                        if (game->players.size() < 2)
                         {
-                            availableGames.push_back(game.id);
+                            availableGames.push_back(game->id);
                             break;
                         }
                     }
@@ -193,15 +192,15 @@ public:
                         int gameId = std::stoi(theString.substr(5));
 
                         std::cout << "Joining game " << gameId << std::endl;
-                        for (Game &game : games)
+                        for (Game* game : games)
                         {
-                            std::cout << "Checking game " << game.id << std::endl;
-                            if (game.id == gameId && game.players.size() < 2)
+                            std::cout << "Checking game " << game->id << std::endl;
+                            if (game->id == gameId && game->players.size() < 2)
                             {
                                 std::cout << "Game found" << std::endl;
-                                game.players.push_back(theSocket);
+                                game->players.push_back(theSocket);
                                 std::cout << "Signalling Semaphore" << std::endl;
-                                game.semaphore.Signal();
+                                game->semaphore.Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
                                 break;
@@ -221,8 +220,9 @@ public:
                 else if (theString == "end")
                 {
                     // Find the game this socket is part of and remove it
-                    auto it = std::find_if(games.begin(), games.end(), [&](const Game &game)
-                                           { return std::find(game.players.begin(), game.players.end(), theSocket) != game.players.end(); });
+                    auto it = std::find_if(games.begin(), games.end(), [&](Game *game) {                                // Change this line
+                        return std::find(game->players.begin(), game->players.end(), theSocket) != game->players.end(); // Change this line
+                    });
                     if (it != games.end())
                     {
                         games.erase(it);
