@@ -13,7 +13,8 @@ int main(void)
         while (entry != "done")
         {
             std::cout << "Enter a string to send: ";
-            std::cin >> entry;
+            std::getline(std::cin, entry);
+            
             ByteArray ba(entry);
             int written = theSocket.Write(ba);
             if ( written != ba.v.size())
