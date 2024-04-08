@@ -38,8 +38,8 @@ public:
         std::cout << "Game thread started, semaphore bullshit" << std::endl;
         game.semaphore.Wait();
 
-        std::cout << "game over" << game.board.checkForGameOver() << std::endl;
-        std::cout << "players size" << game.players.size() << std::endl;
+        std::cout << "game over flag: " << game.board.checkForGameOver() << std::endl;
+        std::cout << "players size: " << game.players.size() << std::endl;
         while (!game.board.checkForGameOver() && game.players.size() == 2)
         {
 
@@ -156,9 +156,9 @@ public:
                     newGame->players.push_back(theSocket);
                     std::cout << "Player 1 added" << std::endl;
                     gameThreads.emplace_back(new GameThread(*newGame));
-                    gameThreads.back()->Start();
-                    newGame->semaphore.Signal();
-                    std::cout << "Semaphore signalled" << std::endl;
+                    //gameThreads.back()->Start();
+                    //newGame->semaphore.Signal();
+                    //std::cout << "Semaphore signalled" << std::endl;
 
                     games.push_back(*newGame);
 
