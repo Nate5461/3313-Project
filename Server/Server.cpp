@@ -9,6 +9,7 @@
 #include <vector>
 #include "Board.h"
 #include <algorithm>
+#include <memory>
 
 struct Game {
     int id;
@@ -16,10 +17,11 @@ struct Game {
     std::vector<Socket> players;
     Semaphore semaphore;
 
-    Game() : id(0), board(), semaphore(0) {}
+    Game(std::string const & name) : id(0), board(), semaphore(name, 0, true) {}
 };
 
 std::vector <Game> games;
+
 
 class GameThread : public Thread
 {
@@ -30,9 +32,13 @@ public:
 
     int ThreadMain(void) {
 
+        std::cout << "Game thread started" << std::endl;
         game.semaphore.Wait();
 
+        std::cout << "Game started" << std::endl;
         while (!game.board.checkForGameOver()) {
+
+            std::cout << "Game not over" << std::endl;
             int currentPlayer = game.board.getLastPlayer() == P2 ? P1 : P2;
             switch (currentPlayer) {
                 case P1: {
@@ -66,6 +72,7 @@ public:
                     game.board.makeMove(column - 1, P1);
                     break;
                 }
+                
                 case P2: {
                     std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                     ByteArray bytes(message);
@@ -86,6 +93,7 @@ public:
     }
 };
 
+std::vector<std::unique_ptr<GameThread>> gameThreads;
 
 class CommThread : public Thread
 {
@@ -126,12 +134,18 @@ public:
 
                 // Handle game-related commands
                 if (theString == "start") {
-                    Game* newGame = new Game();
+                    std::string gameName = "game" + std::to_string(games.size());
+                    Game* newGame = new Game(gameName);
+
+                    std::cout << "Creating new game" << std::endl;
                     newGame->players.push_back(theSocket);
-                    games.push_back(*newGame);
-                    GameThread gameThread(*newGame);
-                    gameThread.Start();
+                    std::cout << "Player 1 added" << std::endl;
+                    gameThreads.emplace_back(new GameThread(*newGame));
+                    std::cout << "Game thread created" << std::endl;
+                    gameThreads.back()->Start();
+                    std::cout << "Game thread started" << std::endl;
                     newGame->semaphore.Signal();
+                    std::cout << "Semaphore signalled" << std::endl;
 
                 //Avaialable games
                 } else if (theString == "join") {
