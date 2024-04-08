@@ -162,7 +162,6 @@ public:
 
                     games.push_back(*newGame);
 
-                    this->Stop();
                     // Avaialable games
                 }
                 else if (theString == "join")
@@ -205,7 +204,6 @@ public:
                                 game.semaphore.Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
-                                this->Stop();
                                 break;
                             }
                         }
