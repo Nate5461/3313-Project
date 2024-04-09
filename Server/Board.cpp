@@ -242,6 +242,17 @@ bool Board::checkForDraw() {
 }
 
 std::string Board::getGameBoardAsString() {
+    std::string str;
+    for (const auto& row : gameBoard) {
+        for (int cell : row) {
+            str += std::to_string(cell) + ' ';
+        }
+        str += '\n';
+    }
+    return str;
+}
+/*
+std::string Board::getGameBoardAsString() {
     std::string output;
     output += "|";
     for (int j = 1; j <= numOfColumns; j++) {
@@ -272,3 +283,4 @@ std::string Board::getGameBoardAsString() {
         
     return output;
 }
+*/
