@@ -28,9 +28,10 @@ class GameThread : public Thread
 {
 private:
     Game &game;
+    Semaphore &commSemaphore;
 
 public:
-    GameThread(Game &g) : Thread(true), game(g) {}
+    GameThread(Game &g, Semaphore &s) : Thread(true), game(g), commSemaphore(s) {}
 
     int ThreadMain(void)
     {
@@ -101,7 +102,7 @@ public:
 
                 ByteArray response;
                 game.players[1].Read(response);
-                
+
                 if (response.ToString().empty())
                 {
                     std::cout << "Player disconnected" << std::endl;
@@ -155,6 +156,7 @@ public:
             ByteArray bytes2("It's a draw!");
             game.players[1].Write(bytes2);
         }
+        commSemaphore.Signal();
         return 0;
     }
 };
@@ -166,13 +168,19 @@ class CommThread : public Thread
 
 private:
     Socket theSocket;
+    Semaphore semaphore;
 
 public:
     CommThread(Socket const &p)
-        : Thread(true), theSocket(p)
+        : Thread(true), theSocket(p), semaphore("CommSemaphore", 0, true)
     {
         ;
     }
+
+    Semaphore &getSemaphore()
+    {
+        return semaphore;
+    };
     int ThreadMain(void)
     {
 
@@ -207,11 +215,11 @@ public:
                     std::cout << "Creating new game" << std::endl;
                     newGame->players.push_back(theSocket);
                     std::cout << "Player 1 added" << std::endl;
-                    gameThreads.emplace_back(new GameThread(*newGame));
+                    gameThreads.emplace_back(new GameThread(*newGame, this->getSemaphore()));
                     
 
                     games.push_back(newGame);
-
+                    semaphore.Wait();
                     // Avaialable games
                 }
                 else if (theString == "join")
@@ -254,6 +262,7 @@ public:
                                 game->semaphore.Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
+                                semaphore.Wait();
                                 break;
                             }
                         }
