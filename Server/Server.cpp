@@ -53,16 +53,8 @@ public:
             {
                 std::cout << "Player 1's turn" << std::endl;
                 std::cout << game.board.getGameBoardAsString() << std::endl;
-                const auto &board = game.board.getGameBoard();
-                for (const auto &row : board)
-                {
-                    for (int cell : row)
-                    {
-                        std::cout << cell << ' ';
-                    }
-                    std::cout << '\n';
-                }
-                std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
+
+                std::string message = game.board.getGameBoardAsString() + "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 if (!game.players[0].Write(bytes))
                 {
@@ -105,7 +97,7 @@ public:
             {
                 std::cout << "Player 2's turn" << std::endl;
                 std::cout << game.board.getGameBoardAsString() << std::endl;
-                std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
+                std::string message = game.board.getGameBoardAsString() + "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 game.players[1].Write(bytes);
 
