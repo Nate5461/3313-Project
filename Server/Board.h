@@ -3,6 +3,8 @@
 #include "Board.h"
 #include <vector>
 #include "Move.h"
+#include <string>
+
 
 
 class Board {
@@ -34,4 +36,5 @@ public:
     bool checkWinState();
     int countNInARow(int n, int player);
     bool checkForGameOver();
+    std::string getGameBoardAsString();
 };

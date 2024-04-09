@@ -234,3 +234,34 @@ bool Board::checkForDraw() {
     return true;
 }
 
+std::string Board::getGameBoardAsString() {
+    std::string output;
+    output += "|";
+    for (int j = 1; j <= numOfColumns; j++) {
+        output += (" " + std::to_string(j) + " |");
+    }
+    output += "\n";
+    
+    output += " ---------------------------\n";
+    
+    for (int i = 0; i < numOfRows; i++) {
+        for (int j = 0; j < numOfColumns; j++) {
+            char symbol = '-';
+            if (gameBoard[i][j] == P1) {
+                symbol = 'X';
+            } else if (gameBoard[i][j] == P2) {
+                symbol = 'O';
+            }
+            output += "| " + std::string(1, symbol) + " ";
+            if (j == numOfColumns - 1) {
+                output += "|\n";
+            }
+        }
+    }
+    
+        output += " ---------------------------\n";
+        output += "*****************************\n";
+    
+        
+    return output;
+}

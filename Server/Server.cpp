@@ -51,8 +51,13 @@ public:
             case P1:
             {
                 std::cout << "Player 1's turn" << std::endl;
+                std::cout << game.board.getGameBoardAsString() << std::endl;
                 std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
+                if (!game.players[0].Write(bytes))
+                {
+                    std::cout << "no message" << std::endl;
+                }
                 game.players[0].Write(bytes);
 
                 ByteArray response;
@@ -89,6 +94,7 @@ public:
             case P2:
             {
                 std::cout << "Player 2's turn" << std::endl;
+                std::cout << game.board.getGameBoardAsString() << std::endl;
                 std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 game.players[1].Write(bytes);
