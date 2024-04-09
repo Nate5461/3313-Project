@@ -73,6 +73,10 @@ void Board::makeMove(int col, int player) {
     }
 }
 
+std::vector<std::vector<int>> Board::getGameBoard() const {
+    return gameBoard;
+}
+
 bool Board::canMove(int row, int col) {
     return (row >= 0) && (col >= 0) && (row < numOfRows) && (col < numOfColumns);
 }

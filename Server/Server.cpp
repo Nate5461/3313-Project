@@ -53,6 +53,15 @@ public:
             {
                 std::cout << "Player 1's turn" << std::endl;
                 std::cout << game.board.getGameBoardAsString() << std::endl;
+                const auto &board = game.board.getGameBoard();
+                for (const auto &row : board)
+                {
+                    for (int cell : row)
+                    {
+                        std::cout << cell << ' ';
+                    }
+                    std::cout << '\n';
+                }
                 std::string message = "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
                 if (!game.players[0].Write(bytes))
@@ -218,7 +227,6 @@ public:
                     newGame->players.push_back(theSocket);
                     std::cout << "Player 1 added" << std::endl;
                     gameThreads.emplace_back(new GameThread(*newGame, this->getSemaphore()));
-                    
 
                     games.push_back(newGame);
                     semaphore.Wait();
@@ -228,12 +236,11 @@ public:
                 {
 
                     std::vector<int> availableGames;
-                    for (Game* game : games)
+                    for (Game *game : games)
                     {
                         if (game->players.size() < 2)
                         {
                             availableGames.push_back(game->id);
-                            
                         }
                     }
 
@@ -253,7 +260,7 @@ public:
                         int gameId = std::stoi(theString.substr(5));
 
                         std::cout << "Joining game " << gameId << std::endl;
-                        for (Game* game : games)
+                        for (Game *game : games)
                         {
                             std::cout << "Checking game " << game->id << std::endl;
                             if (game->id == gameId && game->players.size() < 2)
@@ -290,7 +297,6 @@ public:
                         games.erase(it);
                     }
                 }
-
             }
         }
         std::cout << "Thread is gracefully ending" << std::endl;

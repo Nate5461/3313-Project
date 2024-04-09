@@ -27,6 +27,7 @@ public:
     int getLastPlayer() const;
     int getNumOfColumns() const;
     int getWinner() const;
+    std::vector<std::vector<int>> getGameBoard() const;
     void makeMove(int col, int player);
     bool canMove(int row, int col);
     bool checkFullColumn(int col);
