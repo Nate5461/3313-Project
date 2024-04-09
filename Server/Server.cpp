@@ -17,9 +17,15 @@ struct Game
     int id;
     Board board;
     std::vector<Socket> players;
-    Semaphore semaphore;
+    Semaphore semaphore1;
+    Semaphore semaphore2;
 
-    Game(std::string const &name) : id(0), board(), semaphore(name, 0, true) {}
+    Game(std::string const &name1, std::string const &name2) : id(0), board(), 
+    semaphore1(name1, 0, true),
+    semaphore2(name2, 0, true)
+    {}
+
+    Game(std::string const &name) : Game(name, "DefaultName") {} // Delegating to the existing constructor
 };
 
 std::vector<Game *> games;
@@ -31,14 +37,17 @@ private:
     Semaphore &commSemaphore;
 
 public:
+
     GameThread(Game &g, Semaphore &s) : Thread(true), game(g), commSemaphore(s) {}
 
     int ThreadMain(void)
     {
-
+        
         std::cout << "Game thread started, semaphore bullshit" << std::endl;
         std::cout << "players size: " << game.players.size() << std::endl;
-        game.semaphore.Wait();
+
+        game.semaphore1.Wait();
+        game.semaphore2.Wait();
 
         std::cout << "game over flag: " << game.board.checkForGameOver() << std::endl;
         std::cout << "players size: " << game.players.size() << std::endl;
@@ -139,28 +148,27 @@ public:
         }
 
         std::cout << "Game over" << std::endl;
+        ByteArray bytes;
         if (game.board.getWinner() == P1)
         {
-            ByteArray bytes("Player 1 wins!");
-            game.players[0].Write(bytes);
-            ByteArray bytes2("Player 1 wins!");
-            game.players[1].Write(bytes2);
+            bytes = ByteArray("Player 1 wins");
         }
         else if (game.board.getWinner() == P2)
         {
-            ByteArray bytes("Player 2 wins!");
-            game.players[0].Write(bytes);
-            ByteArray bytes2("Player 2 wins!");
-            game.players[1].Write(bytes2);
+            bytes = ByteArray("Player 2 wins!");
         }
         else
         {
-            ByteArray bytes("It's a draw!");
-            game.players[0].Write(bytes);
-            ByteArray bytes2("It's a draw!");
-            game.players[1].Write(bytes2);
+            bytes = ByteArray("It's a draw!");
         }
-        commSemaphore.Signal();
+
+        for (int i = 0; i < game.players.size(); ++i)
+        {
+            game.players[i].Write(bytes);
+            game.semaphore1.Signal();
+            game.semaphore2.Signal();
+        }
+        
         return 0;
     }
 };
@@ -214,7 +222,10 @@ public:
                 if (theString == "start")
                 {
                     std::string gameName = "game" + std::to_string(games.size());
-                    Game *newGame = new Game(gameName);
+                    std::string name1 = "FirstSemaphoreName";
+                    std::string name2 = "SecondSemaphoreName";
+                    Game *newGame = new Game(name1, name2);
+
 
                     newGame->id = games.size();
 
@@ -263,7 +274,7 @@ public:
                                 std::cout << "Game found" << std::endl;
                                 game->players.push_back(theSocket);
                                 std::cout << "Signalling Semaphore" << std::endl;
-                                game->semaphore.Signal();
+                                game->semaphore1.Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
                                 semaphore.Wait();
