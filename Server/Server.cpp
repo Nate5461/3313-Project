@@ -84,7 +84,14 @@ public:
                 int column;
                 try
                 {
-                    column = std::stoi(msg);
+                    column = std::stoi(msg) - 1;    // convert to zero-based index
+                    if (column < 0 || column >= game.board.getNumOfColumns()) // Check column bounds.
+                    {
+                        std::cout << "Invalid entry. Please try again." << std::endl;
+                        ByteArray errorMsg("Invalid entry. Please try again.");
+                        game.players[0].Write(errorMsg);
+                        continue;
+                    }
                 }
                 catch (std::invalid_argument &e)
                 {
@@ -97,7 +104,7 @@ public:
                     continue;
                 }
 
-                game.board.makeMove(column - 1, P1);
+                game.board.makeMove(column, P1);
                 break;
             }
 
@@ -122,7 +129,14 @@ public:
                 int column;
                 try
                 {
-                    column = std::stoi(msg);
+                    column = std::stoi(msg) - 1;    // convert to zero-based index
+                    if (column < 0 || column >= game.board.getNumOfColumns())
+                    {
+                        std::cout << "Invalid entry. Please try again." << std::endl;
+                        ByteArray errorMsg("Invalid entry. Please try again.");
+                        game.players[1].Write(errorMsg);
+                        continue;
+                    }
                 }
                 catch (std::invalid_argument &e)
                 {
@@ -135,7 +149,7 @@ public:
                     continue;
                 }
 
-                game.board.makeMove(column - 1, P2);
+                game.board.makeMove(column, P2);
                 break;
             }
             default:
