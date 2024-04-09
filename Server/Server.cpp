@@ -212,6 +212,8 @@ public:
                     std::string gameName = "game" + std::to_string(games.size());
                     Game *newGame = new Game(gameName);
 
+                    newGame->id = games.size();
+
                     std::cout << "Creating new game" << std::endl;
                     newGame->players.push_back(theSocket);
                     std::cout << "Player 1 added" << std::endl;
@@ -231,7 +233,7 @@ public:
                         if (game->players.size() < 2)
                         {
                             availableGames.push_back(game->id);
-                            break;
+                            
                         }
                     }
 
@@ -289,7 +291,6 @@ public:
                     }
                 }
 
-                theSocket.Write(bytes);
             }
         }
         std::cout << "Thread is gracefully ending" << std::endl;
