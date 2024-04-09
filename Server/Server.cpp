@@ -227,20 +227,16 @@ public:
                 {
 
                     std::vector<int> availableGames;
-                    for (Game *game : games)
-                    {
-                        if (game->players.size() < 2)
-                        {
-                            availableGames.push_back(game->id);
+                    std::string availableGamesString;
+
+                    for (int i = 0; i < availableGames.size(); i++) {
+                        if (i != 0) {
+                            availableGamesString += " ";
                         }
+                        availableGamesString += std::to_string(availableGames[i]);
                     }
 
-                    std::string availableGamesString = "Available games: " + std::to_string(availableGames.size());
-
-                    for (int id : availableGames)
-                    {
-                        availableGamesString += " ID: " + std::to_string(id);
-                    }
+                    
                     ByteArray bytes(availableGamesString);
                     theSocket.Write(bytes);
                 }
