@@ -26,6 +26,7 @@ public:
     Board(const Board& board);
     int getLastPlayer() const;
     int getNumOfColumns() const;
+    int getWinner() const;
     void makeMove(int col, int player);
     bool canMove(int row, int col);
     bool checkFullColumn(int col);

@@ -56,6 +56,9 @@ int Board::getNumOfColumns() const {
 }
 
 
+int Board::getWinner() const {
+    return winner;
+}
 
 void Board::makeMove(int col, int player) {
     try {

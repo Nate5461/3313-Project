@@ -101,7 +101,29 @@ public:
 
                 ByteArray response;
                 game.players[1].Read(response);
-                int column = std::stoi(response.ToString());
+                
+                if (response.ToString().empty())
+                {
+                    std::cout << "Player disconnected" << std::endl;
+                }
+
+                std::string msg = response.ToString();
+
+                int column;
+                try
+                {
+                    column = std::stoi(msg);
+                }
+                catch (std::invalid_argument &e)
+                {
+                    std::cout << "Invalid input" << std::endl;
+                    continue;
+                }
+                catch (std::out_of_range &e)
+                {
+                    std::cout << "Invalid input" << std::endl;
+                    continue;
+                }
 
                 game.board.makeMove(column - 1, P2);
                 break;
@@ -109,6 +131,29 @@ public:
             default:
                 break;
             }
+        }
+
+        std::cout << "Game over" << std::endl;
+        if (game.board.getWinner() == P1)
+        {
+            ByteArray bytes("Player 1 wins!");
+            game.players[0].Write(bytes);
+            ByteArray bytes2("Player 1 wins!");
+            game.players[1].Write(bytes2);
+        }
+        else if (game.board.getWinner() == P2)
+        {
+            ByteArray bytes("Player 2 wins!");
+            game.players[0].Write(bytes);
+            ByteArray bytes2("Player 2 wins!");
+            game.players[1].Write(bytes2);
+        }
+        else
+        {
+            ByteArray bytes("It's a draw!");
+            game.players[0].Write(bytes);
+            ByteArray bytes2("It's a draw!");
+            game.players[1].Write(bytes2);
         }
         return 0;
     }
