@@ -69,6 +69,9 @@ public:
                 if (response.ToString().empty())
                 {
                     std::cout << "Player disconnected" << std::endl;
+                    commSemaphore.Signal();
+
+                    return 0;
                 }
 
                 std::string msg = response.ToString();
