@@ -17,15 +17,10 @@ struct Game
     int id;
     Board board;
     std::vector<Socket> players;
-    Semaphore semaphore1;
-    Semaphore semaphore2;
+    std::vector<Semaphore*> semaphores;
 
-    Game(std::string const &name1, std::string const &name2) : id(0), board(), 
-    semaphore1(name1, 0, true),
-    semaphore2(name2, 0, true)
+    Game(std::string const &name) : id(0), board()
     {}
-
-    Game(std::string const &name) : Game(name, "DefaultName") {} // Delegating to the existing constructor
 };
 
 std::vector<Game *> games;
@@ -34,23 +29,17 @@ class GameThread : public Thread
 {
 private:
     Game &game;
-    Semaphore &commSemaphore;
 
 public:
 
-    GameThread(Game &g, Semaphore &s) : Thread(true), game(g), commSemaphore(s) {}
+    GameThread(Game &g) : Thread(true), game(g) {}
 
     int ThreadMain(void)
     {
-        
-        std::cout << "Game thread started, semaphore bullshit" << std::endl;
+
+        std::cout << "Game thread started" << std::endl;
         std::cout << "players size: " << game.players.size() << std::endl;
 
-        game.semaphore1.Wait();
-        game.semaphore2.Wait();
-
-        std::cout << "game over flag: " << game.board.checkForGameOver() << std::endl;
-        std::cout << "players size: " << game.players.size() << std::endl;
         while (!game.board.checkForGameOver() && game.players.size() == 2)
         {
 
@@ -69,7 +58,6 @@ public:
                 {
                     std::cout << "no message" << std::endl;
                 }
-                game.players[0].Write(bytes);
 
                 ByteArray response;
 
@@ -78,7 +66,15 @@ public:
                 if (response.ToString().empty())
                 {
                     std::cout << "Player disconnected" << std::endl;
-                    commSemaphore.Signal();
+                    
+                    
+                    std::string message = "Player1 disconnected";
+                    ByteArray bytes(message);
+                    game.players[1].Write(bytes);
+                    
+                    game.semaphores[1]->Signal();
+
+                    games.erase(std::remove(games.begin(), games.end(), &game), games.end());
 
                     return 0;
                 }
@@ -111,14 +107,30 @@ public:
                 std::cout << game.board.getGameBoardAsString() << std::endl;
                 std::string message = game.board.getGameBoardAsString() + "Your move. Enter column (1-" + std::to_string(game.board.getNumOfColumns()) + "): ";
                 ByteArray bytes(message);
-                game.players[1].Write(bytes);
+
+                if (!game.players[1].Write(bytes))
+                {
+                    std::cout << "no message" << std::endl;
+                }
 
                 ByteArray response;
+
                 game.players[1].Read(response);
 
                 if (response.ToString().empty())
                 {
                     std::cout << "Player disconnected" << std::endl;
+                    
+                    
+                    std::string message = "Player1 disconnected";
+                    ByteArray bytes(message);
+                    game.players[0].Write(bytes);
+                    
+                    game.semaphores[0]->Signal();
+
+                    games.erase(std::remove(games.begin(), games.end(), &game), games.end());
+                    
+                    return 0;
                 }
 
                 std::string msg = response.ToString();
@@ -148,27 +160,31 @@ public:
         }
 
         std::cout << "Game over" << std::endl;
+
         ByteArray bytes;
         if (game.board.getWinner() == P1)
         {
-            bytes = ByteArray("Player 1 wins");
+
+            bytes = ByteArray(game.board.getGameBoardAsString() + "Player 1 wins");
         }
         else if (game.board.getWinner() == P2)
         {
-            bytes = ByteArray("Player 2 wins!");
+            bytes = ByteArray(game.board.getGameBoardAsString() + "Player 2 wins!");
         }
         else
         {
-            bytes = ByteArray("It's a draw!");
+            bytes = ByteArray(game.board.getGameBoardAsString() + "It's a draw!");
         }
 
         for (int i = 0; i < game.players.size(); ++i)
         {
             game.players[i].Write(bytes);
-            game.semaphore1.Signal();
-            game.semaphore2.Signal();
+            game.semaphores[0]->Signal();
+            game.semaphores[1]->Signal();
+            
         }
         
+        games.erase(std::remove(games.begin(), games.end(), &game), games.end());
         return 0;
     }
 };
@@ -222,19 +238,21 @@ public:
                 if (theString == "start")
                 {
                     std::string gameName = "game" + std::to_string(games.size());
-                    std::string name1 = "FirstSemaphoreName";
-                    std::string name2 = "SecondSemaphoreName";
-                    Game *newGame = new Game(name1, name2);
+                    Game *newGame = new Game(gameName);
 
 
                     newGame->id = games.size();
 
                     std::cout << "Creating new game" << std::endl;
                     newGame->players.push_back(theSocket);
+                    newGame->semaphores.push_back(&this->getSemaphore());
                     std::cout << "Player 1 added" << std::endl;
-                    gameThreads.emplace_back(new GameThread(*newGame, this->getSemaphore()));
+                    
 
                     games.push_back(newGame);
+                    std::string message = "Game " + gameName + " created. Waiting for player 2...";
+                    ByteArray bytes(message);
+                    //theSocket.Write(bytes);
                     semaphore.Wait();
                     // Avaialable games
                 }
@@ -273,8 +291,11 @@ public:
                             {
                                 std::cout << "Game found" << std::endl;
                                 game->players.push_back(theSocket);
+                                game->semaphores.push_back(&this->getSemaphore());
                                 std::cout << "Signalling Semaphore" << std::endl;
-                                game->semaphore1.Signal();
+
+                                gameThreads.emplace_back(new GameThread(*game));
+                                //game->semaphores[0]->Signal();
 
                                 std::cout << "Player 2 added. Game " << gameId << " started." << std::endl;
                                 semaphore.Wait();
@@ -302,6 +323,10 @@ public:
                     {
                         games.erase(it);
                     }
+                } else{
+                    std::string message = "Invalid command";
+                    ByteArray bytes(message);
+                    theSocket.Write(bytes);
                 }
             }
         }
